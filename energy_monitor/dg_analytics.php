@@ -29,6 +29,21 @@ function dg_format_minutes(int $minutes): string
     return sprintf('%d.%02d', intdiv($minutes, 60), $minutes % 60);
 }
 
+$branch = trim((string) ($_GET['branch'] ?? ''));
+if ($branch !== '' && !user_can_branch($branch)) {
+    $branch = '';
+}
+$branchSql = 'SELECT branch_name, company FROM bill_sites';
+$branchParams = [];
+if (!sees_all_sites()) {
+    [$branchClause, $branchParams] = scope_branch_clause('branch_name');
+    $branchSql .= ' WHERE 1=1' . $branchClause;
+}
+$branchSql .= ' ORDER BY branch_name';
+$branchStmt = $conn->prepare($branchSql);
+$branchStmt->execute($branchParams);
+$branchOptions = $branchStmt->fetchAll(PDO::FETCH_ASSOC);
+
 $category = strtoupper((string) ($_GET['category'] ?? ''));
 if (!in_array($category, ['', 'CTI', 'OFFICE'], true)) {
     $category = '';
@@ -52,6 +67,10 @@ if (!sees_all_sites()) {
 if ($category !== '') {
     $sql .= ' AND category = ?';
     $params[] = $category;
+}
+if ($branch !== '') {
+    $sql .= ' AND branch_name = ?';
+    $params[] = $branch;
 }
 $sql .= ' ORDER BY branch_name, category, log_date';
 $stmt = $conn->prepare($sql);
@@ -103,6 +122,17 @@ include 'includes/sidebar.php';
 
     <form method="get" class="panel mb-3">
         <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label" for="branch">Location</label>
+                <select id="branch" name="branch" class="form-select">
+                    <option value="">All locations</option>
+                    <?php foreach ($branchOptions as $site) { ?>
+                    <option value="<?= htmlspecialchars($site['branch_name']) ?>" <?= strcasecmp($branch, $site['branch_name']) === 0 ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($site['branch_name'] . ' · ' . $site['company']) ?>
+                    </option>
+                    <?php } ?>
+                </select>
+            </div>
             <div class="col-md-3">
                 <label class="form-label" for="category">Category</label>
                 <select id="category" name="category" class="form-select">

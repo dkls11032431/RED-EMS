@@ -1,0 +1,897 @@
+[
+  {
+    "state": "GUJRAT",
+    "branch": "AHMEDABAD",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "AHMEDABAD",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "AHMEDABAD",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "AHMEDABAD",
+    "broadcaster": "RADIO ONE"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "AHMEDABAD",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "Rajkot",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "Rajkot",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "Rajkot",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "Rajkot",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "Vadodara",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "Vadodara",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "Vadodara",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "Vadodara",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "SURAT",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "SURAT",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "SURAT",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "SURAT",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "GUJRAT",
+    "branch": "SURAT",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "PUNE",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "PUNE",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "PUNE",
+    "broadcaster": "RADIO ONE"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "PUNE",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "PUNE",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "PUNE",
+    "broadcaster": "ENIL - MIRCHI LOVE"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NAGPUR",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NAGPUR",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NAGPUR",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NAGPUR",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NAGPUR",
+    "broadcaster": "ENIL - MIRCHI LOVE"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NAGPUR",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "DHULE",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "DHULE",
+    "broadcaster": "RADIO ORANGE"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "DHULE",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NANDED",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NANDED",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "MAHARASTRA",
+    "branch": "NANDED",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "BHOPAL",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "BHOPAL",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "BHOPAL",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "BHOPAL",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "JABALPUR",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "JABALPUR",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "JABALPUR",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "JABALPUR",
+    "broadcaster": "ORANGE FM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "INDORE",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "INDORE",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "INDORE",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "MADHYA PRADESH",
+    "branch": "INDORE",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JAIPUR",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JAIPUR",
+    "broadcaster": "ENIL - MIRCHI LOVE"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JAIPUR",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JAIPUR",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JAIPUR",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JAIPUR",
+    "broadcaster": "RADIO TADKA"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "KANPUR",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "KANPUR",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "KANPUR",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "KANPUR",
+    "broadcaster": "FEVERFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "KANPUR",
+    "broadcaster": "ENIL - MIRCHI LOVE"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "KANPUR",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "AllAHABAD",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "AllAHABAD",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "AllAHABAD",
+    "broadcaster": "FEVERFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "AllAHABAD",
+    "broadcaster": "RADIO TADKA"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "VARANASI",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "VARANASI",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "VARANASI",
+    "broadcaster": "RADIO MANTRA"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "VARANASI",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "LUCKNOW",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "LUCKNOW",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "LUCKNOW",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "LUCKNOW",
+    "broadcaster": "FEVERFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "LUCKNOW",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "LUCKNOW",
+    "broadcaster": "ENIL - MIRCHI LOVE"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JHANSI",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JHANSI",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JHANSI",
+    "broadcaster": "RADIO TADKA"
+  },
+  {
+    "state": "UP & RAJASTHAN",
+    "branch": "JHANSI",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "BIHAR",
+    "branch": "PATNA",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "BIHAR",
+    "branch": "PATNA",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "BIHAR",
+    "branch": "PATNA",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "BIHAR",
+    "branch": "PATNA",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "BIHAR",
+    "branch": "MUZAFFARPUR",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "BIHAR",
+    "branch": "MUZAFFARPUR",
+    "broadcaster": "RADIO ORANGE"
+  },
+  {
+    "state": "BIHAR",
+    "branch": "MUZAFFARPUR",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "BIHAR",
+    "branch": "MUZAFFARPUR",
+    "broadcaster": "RADIO TADKA"
+  },
+  {
+    "state": "NORTH",
+    "branch": "CHANDIGARH",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "CHANDIGARH",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "CHANDIGARH",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "CHANDIGARH",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "NORTH",
+    "branch": "AMRITSAR",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "AMRITSAR",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "AMRITSAR",
+    "broadcaster": "MYFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "AMRITSAR",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "NORTH",
+    "branch": "JAMMU",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "JAMMU",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "JAMMU",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "NORTH",
+    "branch": "JAMMU",
+    "broadcaster": "RADIO TADKA"
+  },
+  {
+    "state": "NORTH",
+    "branch": "LEH",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "LEH",
+    "broadcaster": "TOPFM"
+  },
+  {
+    "state": "NORTH",
+    "branch": "LEH",
+    "broadcaster": "RADIO NATION"
+  },
+  {
+    "state": "WEST BENGAL",
+    "branch": "SILIGURI",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "WEST BENGAL",
+    "branch": "SILIGURI",
+    "broadcaster": "RADIO MISTY"
+  },
+  {
+    "state": "WEST BENGAL",
+    "branch": "SILIGURI",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "WEST BENGAL",
+    "branch": "GANGTOK",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "WEST BENGAL",
+    "branch": "GANGTOK",
+    "broadcaster": "RADIO MISTY"
+  },
+  {
+    "state": "NORTH EAST",
+    "branch": "ASANSOL",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "NORTH EAST",
+    "branch": "ASANSOL",
+    "broadcaster": "ENIL - MIRCHI"
+  },
+  {
+    "state": "NORTH EAST",
+    "branch": "ASANSOL",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "NORTH EAST",
+    "branch": "AGARTALA",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "NORTH EAST",
+    "branch": "AGARTALA",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "VIJAYAWADA",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "VIJAYAWADA",
+    "broadcaster": "EFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "VIJAYAWADA",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "RAJAMUNDRY",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "RAJAMUNDRY",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "RAJAMUNDRY",
+    "broadcaster": "EFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "WARANGAL",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "WARANGAL",
+    "broadcaster": "EFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "WARANGAL",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "HYDERABAD",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "HYDERABAD",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "HYDERABAD",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "HYDERABAD",
+    "broadcaster": "ENIL - Mirchi Love"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "HYDERABAD",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "HYDERABAD",
+    "broadcaster": "FEVERFM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "HYDERABAD",
+    "broadcaster": "ENIL - Mirchi Kool"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "HYDERABAD",
+    "broadcaster": "MAGIC FM"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "BANGALORE",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "BANGALORE",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "BANGALORE",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "BANGALORE",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "BANGALORE",
+    "broadcaster": "RADIO ONE"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "BANGALORE",
+    "broadcaster": "FEVERFM"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "BANGALORE",
+    "broadcaster": "RADIO INDIGO"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "BANGALORE",
+    "broadcaster": "ENIL - Mirchi Love"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "MANGALORE",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "MANGALORE",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "MANGALORE",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "Mysore",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "Mysore",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "KARNATAKA",
+    "branch": "Mysore",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "Trivandrum",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "Trivandrum",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "Trivandrum",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "KERALA",
+    "branch": "Trivandrum",
+    "broadcaster": "CLUB FM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "Thrissur",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "Thrissur",
+    "broadcaster": "RADIO MANGO"
+  },
+  {
+    "state": "KERALA",
+    "branch": "Thrissur",
+    "broadcaster": "CLUB FM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "KANNUR",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "KANNUR",
+    "broadcaster": "RADIO MANGO"
+  },
+  {
+    "state": "KERALA",
+    "branch": "KANNUR",
+    "broadcaster": "CLUB FM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "KOZHIKODE",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "KERALA",
+    "branch": "KOZHIKODE",
+    "broadcaster": "RADIO MANGO"
+  },
+  {
+    "state": "KERALA",
+    "branch": "KOZHIKODE",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "KERALA",
+    "branch": "KOZHIKODE",
+    "broadcaster": "CLUB FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "MADURAI",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "MADURAI",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "MADURAI",
+    "broadcaster": "HELLO FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "MADURAI",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Pondychery",
+    "broadcaster": "ENIL - Mirchi Kool"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Pondychery",
+    "broadcaster": "REDFM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Pondychery",
+    "broadcaster": "HELLO FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Pondychery",
+    "broadcaster": "BIGFM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "TRICHY",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "TRICHY",
+    "broadcaster": "HELLO FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "TRICHY",
+    "broadcaster": "Suryan FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Tuticorin",
+    "broadcaster": "HELLO FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Tuticorin",
+    "broadcaster": "Suryan FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Coimbatore",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Coimbatore",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Coimbatore",
+    "broadcaster": "HELLO FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Coimbatore",
+    "broadcaster": "Suryan FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Nellai",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Nellai",
+    "broadcaster": "HELLO FM"
+  },
+  {
+    "state": "TAMILNADU",
+    "branch": "Nellai",
+    "broadcaster": "Suryan FM"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "Vizag",
+    "broadcaster": "ENIL - Mirchi"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "Vizag",
+    "broadcaster": "RADIO CITY"
+  },
+  {
+    "state": "ANDHRA PRADEH",
+    "branch": "Vizag",
+    "broadcaster": "REDFM"
+  }
+]

@@ -229,6 +229,9 @@ function ems_ensure_plant(PDO $conn): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
     $conn->exec("INSERT IGNORE INTO mail_settings (id) VALUES (1)");
+    ems_add_column($conn, 'mail_settings', 'last_test_at', 'DATETIME NULL');
+    ems_add_column($conn, 'mail_settings', 'last_test_ok', 'TINYINT NULL');
+    ems_add_column($conn, 'mail_settings', 'last_test_detail', 'VARCHAR(255) NULL');
 
     $conn->exec("
         CREATE TABLE IF NOT EXISTS bill_fault_requests (
@@ -692,25 +695,37 @@ function ems_mail_settings(PDO $conn): array
     return $row ?: [];
 }
 
-function ems_smtp_send(array $settings, string $to, string $subject, string $body): bool
+function ems_smtp_send(array $settings, string $to, string $subject, string $body, ?string &$detail = null): bool
 {
     $host = $settings['host'] ?? '';
     $port = (int) ($settings['port'] ?? 587);
+    $detail = '';
     if ($host === '' || $to === '') {
+        $detail = 'SMTP host and a recipient are required.';
         return false;
     }
     $remote = ($settings['encryption'] ?? '') === 'ssl' ? 'ssl://' . $host : $host;
+    $errno = 0;
+    $errstr = '';
     $socket = @fsockopen($remote, $port, $errno, $errstr, 12);
     if (!$socket) {
+        $detail = 'Could not connect to ' . $host . ':' . $port . '.';
         return false;
     }
-    $read = function () use ($socket) {
+    stream_set_timeout($socket, 12);
+    $ok = true;
+    $read = function () use ($socket, &$ok, &$detail) {
         $data = '';
         while ($line = fgets($socket, 515)) {
             $data .= $line;
             if (isset($line[3]) && $line[3] === ' ') {
                 break;
             }
+        }
+        $code = (int) substr($data, 0, 3);
+        if ($code < 200 || $code >= 400) {
+            $ok = false;
+            $detail = trim($data) !== '' ? trim($data) : 'The mail server closed the connection.';
         }
         return $data;
     };
@@ -719,30 +734,51 @@ function ems_smtp_send(array $settings, string $to, string $subject, string $bod
         return $read();
     };
     $read();
-    $write('EHLO ems.local');
-    if (($settings['encryption'] ?? '') === 'tls') {
-        $write('STARTTLS');
-        stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+    if ($ok) {
         $write('EHLO ems.local');
     }
-    if (($settings['username'] ?? '') !== '') {
-        $write('AUTH LOGIN');
-        $write(base64_encode($settings['username']));
-        $write(base64_encode($settings['password'] ?? ''));
+    if ($ok && ($settings['encryption'] ?? '') === 'tls') {
+        $write('STARTTLS');
+        if ($ok && !@stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            $ok = false;
+            $detail = 'TLS could not be started.';
+        } elseif ($ok) {
+            $write('EHLO ems.local');
+        }
     }
-    $from = $settings['from_email'] ?: $settings['username'];
-    $write('MAIL FROM:<' . $from . '>');
-    $write('RCPT TO:<' . $to . '>');
-    $write('DATA');
-    $headers = 'From: ' . ($settings['from_name'] ?? 'EMS') . ' <' . $from . ">\r\n";
-    $headers .= 'To: <' . $to . ">\r\n";
-    $headers .= 'Subject: ' . $subject . "\r\n";
-    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-    fwrite($socket, $headers . "\r\n" . $body . "\r\n.\r\n");
-    $read();
-    $write('QUIT');
+    if ($ok && ($settings['username'] ?? '') !== '') {
+        $write('AUTH LOGIN');
+        if ($ok) {
+            $write(base64_encode($settings['username']));
+        }
+        if ($ok) {
+            $write(base64_encode($settings['password'] ?? ''));
+        }
+    }
+    $from = $settings['from_email'] ?: ($settings['username'] ?? '');
+    if ($ok) {
+        $write('MAIL FROM:<' . $from . '>');
+    }
+    if ($ok) {
+        $write('RCPT TO:<' . $to . '>');
+    }
+    if ($ok) {
+        $write('DATA');
+    }
+    if ($ok) {
+        $headers = 'From: ' . ($settings['from_name'] ?? 'EMS') . ' <' . $from . ">\r\n";
+        $headers .= 'To: <' . $to . ">\r\n";
+        $headers .= 'Subject: ' . $subject . "\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        fwrite($socket, $headers . "\r\n" . $body . "\r\n.\r\n");
+        $read();
+    }
+    if ($ok) {
+        $detail = 'Connected and the test message was accepted for ' . $to . '.';
+    }
+    @fwrite($socket, "QUIT\r\n");
     fclose($socket);
-    return true;
+    return $ok;
 }
 
 function ems_mail_alarm(PDO $conn, string $branch, string $message, string $parameter, $actual, $limit, string $severity): void
@@ -777,16 +813,24 @@ function ems_mail_alarm(PDO $conn, string $branch, string $message, string $para
     }
 }
 
-function ems_fault_status(PDO $conn, string $type, string $company, string $branch, string $broadcaster, string $transmitter): ?string
+function ems_fault_latest(PDO $conn, string $type, string $company, string $branch, string $broadcaster, string $transmitter): ?string
 {
     $stmt = $conn->prepare("
         SELECT status FROM bill_fault_requests
         WHERE bill_type = ? AND company = ? AND branch_name = ? AND broadcaster = ? AND transmitter = ?
-          AND status IN ('pending', 'approved')
         ORDER BY id DESC
         LIMIT 1
     ");
     $stmt->execute([$type, $company, $branch, $broadcaster, $transmitter]);
     $status = $stmt->fetchColumn();
     return $status === false ? null : (string) $status;
+}
+
+function ems_fault_status(PDO $conn, string $type, string $company, string $branch, string $broadcaster, string $transmitter): ?string
+{
+    $status = ems_fault_latest($conn, $type, $company, $branch, $broadcaster, $transmitter);
+    if ($status === 'pending' || $status === 'approved') {
+        return $status;
+    }
+    return null;
 }

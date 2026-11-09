@@ -32,7 +32,7 @@ $crumbMap = [
     'devices.php' => ['IoT', 'Devices'],
     'site_map.php' => ['Operations', 'Supply map'],
     'consumption_report.php' => ['Analytics', 'Consumption'],
-    'dg_operations.php' => ['Analytics', 'DG operations'],
+    'dg_operations.php' => ['Billing', 'DG operations'],
     'dg_analytics.php' => ['Analytics', 'DG analytics'],
     'dg_report.php' => ['Analytics', 'DG worksheets'],
     'eb_bill_report.php' => ['Analytics', 'EB worksheets'],
@@ -79,7 +79,6 @@ $userLabel = htmlspecialchars((string) ($_SESSION['user'] ?? ''));
     <a class="<?= ($emsScript === 'consumption_report.php' && !in_array(strtoupper((string) ($emsQuery['fuel'] ?? 'BOTH')), ['EB', 'DG'], true)) ? 'active' : '' ?>" href="consumption_report.php">Overview</a>
     <a class="sub<?= ems_here('consumption_report.php', ['fuel' => 'EB']) ?>" href="consumption_report.php?fuel=EB&period=daily">EB report</a>
     <a class="sub<?= ems_here('consumption_report.php', ['fuel' => 'DG']) ?>" href="consumption_report.php?fuel=DG&period=daily">DG registers</a>
-    <a class="<?= ems_here('dg_operations.php') ?>" href="dg_operations.php">DG operations log</a>
     <a class="<?= ems_here('dg_analytics.php') ?>" href="dg_analytics.php">DG location analytics</a>
     <a class="<?= ems_here('bill_analysis.php') ?>" href="bill_analysis.php">Bill comparison</a>
     <?php if ($navAll) { ?>
@@ -116,15 +115,7 @@ $userLabel = htmlspecialchars((string) ($_SESSION['user'] ?? ''));
         <a class="sub" href="bill_entry.php?type=NON_BECIL&company=SAFL">SAFL (North)</a>
         <?php } ?>
     </div>
-    <a class="nav" data-bs-toggle="collapse" href="#dgBills" role="button" aria-expanded="false" aria-controls="dgBills">DG bills</a>
-    <div class="collapse" id="dgBills">
-        <?php if (in_array('KAL', $navCompanies, true)) { ?>
-        <a class="sub" href="bill_entry.php?type=DG&company=KAL">KAL (South)</a>
-        <?php } ?>
-        <?php if (in_array('SAFL', $navCompanies, true)) { ?>
-        <a class="sub" href="bill_entry.php?type=DG&company=SAFL">SAFL (North)</a>
-        <?php } ?>
-    </div>
+    <a class="<?= ems_here('dg_operations.php') ?>" href="dg_operations.php">DG operations</a>
 
     <div class="nav-label">Administration</div>
     <?php if ($navAdmin) { ?>

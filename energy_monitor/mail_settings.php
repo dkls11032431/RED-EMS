@@ -11,6 +11,30 @@ if (!isset($_SESSION['user']) || !sees_all_sites()) {
 ems_ensure_plant($conn);
 
 $saved = false;
+$testDetail = '';
+if (isset($_POST['test'])) {
+    $settings = ems_mail_settings($conn);
+    $to = trim((string) ($settings['admin_email'] ?? ''));
+    if ($to === '') {
+        $to = trim((string) ($settings['supervisor_email'] ?? ''));
+    }
+    $detail = '';
+    $ok = false;
+    if ($to === '') {
+        $detail = 'Save an admin or supervisor email before sending a test.';
+    } else {
+        $ok = ems_smtp_send(
+            $settings,
+            $to,
+            'RED SURYAN EMS mail test',
+            "This is a connection test from RED SURYAN EMS.\nIf you can read it, alarm mail can be delivered.",
+            $detail
+        );
+    }
+    $conn->prepare('UPDATE mail_settings SET last_test_at = ?, last_test_ok = ?, last_test_detail = ? WHERE id = 1')
+        ->execute([date('Y-m-d H:i:s'), $ok ? 1 : 0, substr($detail, 0, 255)]);
+    $testDetail = $detail;
+}
 if (isset($_POST['save'])) {
     $stmt = $conn->prepare("
         UPDATE mail_settings SET
@@ -39,7 +63,23 @@ include 'includes/sidebar.php';
 <div class="content">
 <h2>Alarm mail</h2>
 <p class="text-muted">Admin and supervisor receive every location. A location user receives only the branch named on that account, and only if an email is stored on the user.</p>
+<?php
+$connected = (int) ($settings['last_test_ok'] ?? 0) === 1;
+?>
 <?php if ($saved) { ?><div class="alert alert-success">Mail settings saved. Alarms are also written to energy_monitor/logs/alarms.log when mail is off.</div><?php } ?>
+<?php if ($testDetail !== '') { ?><div class="alert <?= $connected ? 'alert-success' : 'alert-danger' ?>"><?= htmlspecialchars($testDetail) ?></div><?php } ?>
+<div class="panel mb-3" style="max-width:640px">
+    <h2>Connection</h2>
+    <?php if ($connected) { ?>
+    <span class="status-pill status-live">Mail connected</span>
+    <?php } else { ?>
+    <span class="status-pill status-offline">Not connected</span>
+    <?php } ?>
+    <div class="small text-muted mt-2">
+        <?= !empty($settings['last_test_at']) ? 'Last test ' . htmlspecialchars((string) $settings['last_test_at']) . '. ' : 'No test has been sent. ' ?>
+        <?= htmlspecialchars((string) ($settings['last_test_detail'] ?? '')) ?>
+    </div>
+</div>
 <form method="post" class="panel" style="max-width:640px">
     <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" name="enabled" id="enabled" <?= (int) ($settings['enabled'] ?? 0) === 1 ? 'checked' : '' ?>>
@@ -61,6 +101,7 @@ include 'includes/sidebar.php';
     <div class="mb-2"><label>Admin email</label><input class="form-control" name="admin_email" value="<?= htmlspecialchars($settings['admin_email'] ?? '') ?>"></div>
     <div class="mb-2"><label>Supervisor email</label><input class="form-control" name="supervisor_email" value="<?= htmlspecialchars($settings['supervisor_email'] ?? '') ?>"></div>
     <button class="btn btn-primary" name="save">Save</button>
+    <button class="btn btn-outline-success" name="test" value="1">Send test mail</button>
 </form>
 </div>
 <?php include 'includes/footer.php'; ?>
