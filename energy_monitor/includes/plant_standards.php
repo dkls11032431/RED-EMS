@@ -695,6 +695,21 @@ function ems_mail_settings(PDO $conn): array
     return $row ?: [];
 }
 
+function ems_smtp_auth_mechanisms(string $ehlo): array
+{
+    $mechanisms = [];
+    foreach (preg_split('/\r\n|\n|\r/', $ehlo) ?: [] as $line) {
+        if (preg_match('/^250[- ]AUTH(?:\s+|=)(.+)$/i', trim($line), $match)) {
+            foreach (preg_split('/\s+/', trim($match[1])) ?: [] as $mechanism) {
+                if ($mechanism !== '') {
+                    $mechanisms[] = strtoupper($mechanism);
+                }
+            }
+        }
+    }
+    return array_values(array_unique($mechanisms));
+}
+
 function ems_smtp_send(array $settings, string $to, string $subject, string $body, ?string &$detail = null): bool
 {
     $host = $settings['host'] ?? '';
@@ -734,8 +749,9 @@ function ems_smtp_send(array $settings, string $to, string $subject, string $bod
         return $read();
     };
     $read();
+    $mechanisms = [];
     if ($ok) {
-        $write('EHLO ems.local');
+        $mechanisms = ems_smtp_auth_mechanisms($write('EHLO ems.local'));
     }
     if ($ok && ($settings['encryption'] ?? '') === 'tls') {
         $write('STARTTLS');
@@ -743,16 +759,29 @@ function ems_smtp_send(array $settings, string $to, string $subject, string $bod
             $ok = false;
             $detail = 'TLS could not be started.';
         } elseif ($ok) {
-            $write('EHLO ems.local');
+            $mechanisms = ems_smtp_auth_mechanisms($write('EHLO ems.local'));
         }
     }
     if ($ok && ($settings['username'] ?? '') !== '') {
-        $write('AUTH LOGIN');
-        if ($ok) {
-            $write(base64_encode($settings['username']));
+        $username = (string) $settings['username'];
+        $password = (string) ($settings['password'] ?? '');
+        if (in_array('LOGIN', $mechanisms, true)) {
+            $write('AUTH LOGIN');
+            if ($ok) {
+                $write(base64_encode($username));
+            }
+            if ($ok) {
+                $write(base64_encode($password));
+            }
+        } elseif (in_array('PLAIN', $mechanisms, true)) {
+            $write('AUTH PLAIN ' . base64_encode("\0" . $username . "\0" . $password));
+        } else {
+            $ok = false;
+            $offered = $mechanisms === [] ? 'no password login' : implode(', ', $mechanisms);
+            $detail = 'Connected, but this server does not offer password login (' . $offered . ').';
         }
-        if ($ok) {
-            $write(base64_encode($settings['password'] ?? ''));
+        if (!$ok && preg_match('/unrecognized authentication|5\.7\.4|XOAUTH2|does not offer password login/i', $detail)) {
+            $detail = 'Outlook accepted the connection but refused password login. In Microsoft 365, open this mailbox and turn on Authenticated SMTP, then send the test again. ' . $detail;
         }
     }
     $from = $settings['from_email'] ?: ($settings['username'] ?? '');

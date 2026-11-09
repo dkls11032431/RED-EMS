@@ -12,8 +12,24 @@ ems_ensure_plant($conn);
 
 $saved = false;
 $testDetail = '';
+$stored = ems_mail_settings($conn);
+$postedPassword = (string) ($_POST['password'] ?? '');
+if ($postedPassword === '') {
+    $postedPassword = (string) ($stored['password'] ?? '');
+}
 if (isset($_POST['test'])) {
-    $settings = ems_mail_settings($conn);
+    $settings = $stored;
+    if (isset($_POST['host'])) {
+        $settings['host'] = trim((string) $_POST['host']);
+        $settings['port'] = (int) ($_POST['port'] ?? 587);
+        $settings['username'] = trim((string) ($_POST['username'] ?? ''));
+        $settings['password'] = $postedPassword;
+        $settings['encryption'] = (string) ($_POST['encryption'] ?? 'tls');
+        $settings['from_email'] = trim((string) ($_POST['from_email'] ?? ''));
+        $settings['from_name'] = trim((string) ($_POST['from_name'] ?? 'EMS alarms'));
+        $settings['admin_email'] = trim((string) ($_POST['admin_email'] ?? ''));
+        $settings['supervisor_email'] = trim((string) ($_POST['supervisor_email'] ?? ''));
+    }
     $to = trim((string) ($settings['admin_email'] ?? ''));
     if ($to === '') {
         $to = trim((string) ($settings['supervisor_email'] ?? ''));
@@ -47,7 +63,7 @@ if (isset($_POST['save'])) {
         trim($_POST['host'] ?? ''),
         (int) ($_POST['port'] ?? 587),
         trim($_POST['username'] ?? ''),
-        $_POST['password'] ?? '',
+        $postedPassword,
         $_POST['encryption'] ?? 'tls',
         trim($_POST['from_email'] ?? ''),
         trim($_POST['from_name'] ?? 'EMS alarms'),
@@ -62,7 +78,7 @@ include 'includes/sidebar.php';
 ?>
 <div class="content">
 <h2>Alarm mail</h2>
-<p class="text-muted">Admin and supervisor receive every location. A location user receives only the branch named on that account, and only if an email is stored on the user.</p>
+<p class="text-muted">Admin and supervisor receive every location. A location user receives only the branch named on that account, and only if an email is stored on the user. Outlook on port 587 uses TLS. If the test says the authentication type is not recognized, turn on Authenticated SMTP for that mailbox in Microsoft 365 and test again. Leaving the password blank keeps the saved password.</p>
 <?php
 $connected = (int) ($settings['last_test_ok'] ?? 0) === 1;
 ?>

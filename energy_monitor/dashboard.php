@@ -94,17 +94,8 @@ if ($locationPick) {
     if ($meter_id > 0 && !meter_belongs_to_user($conn, $meter_id)) {
         $meter_id = 0;
     }
-} elseif ($meter_id <= 0 || !meter_belongs_to_user($conn, $meter_id)) {
+} else {
     $meter_id = 0;
-    foreach ($locationGroups['locations'] as $group) {
-        $meter_id = (int) ($group['meters'][0]['meter_id'] ?? 0);
-        if ($meter_id > 0) {
-            break;
-        }
-    }
-    if ($meter_id === 0 && sees_all_sites()) {
-        $meter_id = 1;
-    }
 }
 
 $meterReadingStmt = $conn->prepare("
@@ -389,8 +380,7 @@ include 'includes/sidebar.php';
     <div class="empty-state">No locations are assigned to this account.</div>
 <?php } ?>
 <?php foreach ($siteBoard as $tile) {
-    $selectedTile = strcasecmp($tile['branch'], $selectedCity) === 0
-        || strcasecmp(ems_match_branch($tile['branch']), ems_match_branch($selectedCity)) === 0;
+    $selectedTile = $locationPick && strcasecmp($tile['branch'], $locationPick['branch']) === 0;
     $href = 'dashboard.php?' . http_build_query([
         'location' => $tile['branch'],
         'meter_id' => $tile['main_meter_id'],
@@ -402,114 +392,6 @@ include 'includes/sidebar.php';
         <span><?= htmlspecialchars($tile['company'] . ' · ' . $tile['updated']) ?></span>
     </a>
 <?php } ?>
-</div>
-
-<div class="ops-bar">
-    <div>
-        <h1 class="ops-title">Energy dashboard</h1>
-        <div class="ops-sub"><?= htmlspecialchars($selectedMeterName) ?><?= $selectedLocation !== '' ? ' · ' . htmlspecialchars($selectedLocation) : '' ?></div>
-        <form method="get" class="mt-2">
-            <select name="meter_id" class="form-select meter-select" onchange="this.form.submit()">
-
-        <?php
-
-        foreach ($locationGroups['locations'] as $group)
-        {
-        ?>
-        <optgroup label="<?= htmlspecialchars($group['location'] . ' (' . $group['siteno'] . ')') ?>">
-        <?php foreach ($group['meters'] as $meter) { ?>
-        <option
-            value="<?= $meter['meter_id']; ?>"
-            <?= $meter_id == $meter['meter_id'] ? 'selected' : ''; ?>>
-            <?= htmlspecialchars($meter['meter_name']); ?>
-        </option>
-        <?php } ?>
-        </optgroup>
-        <?php
-        }
-
-        if (sees_all_sites())
-        {
-            $meters = $conn->query("
-                SELECT meter_id,meter_name
-                FROM meter_master
-                ORDER BY meter_id
-            ");
-        }
-        else
-        {
-            $meters = [];
-        }
-
-        $otherMeters = [];
-        foreach ($meters as $meter)
-        {
-            if (!isset($usedMeterIds[(int) $meter['meter_id']]))
-            {
-                $otherMeters[] = $meter;
-            }
-        }
-
-        if ($otherMeters)
-        {
-        ?>
-        <optgroup label="Other">
-        <?php foreach ($otherMeters as $meter) { ?>
-        <option
-            value="<?= $meter['meter_id']; ?>"
-            <?= $meter_id == $meter['meter_id'] ? 'selected' : ''; ?>>
-            <?= htmlspecialchars($meter['meter_name']); ?>
-        </option>
-        <?php } ?>
-        </optgroup>
-        <?php } ?>
-
-            </select>
-        </form>
-    </div>
-
-    <div class="ops-actions">
-        <div class="comms <?= $commsClass ?>">
-            <i></i>
-            <span><?= $commsLabel ?></span>
-            <span>
-                <?php if ($meterLastReading === null): ?>
-                    No sample stored
-                <?php else: ?>
-                    <?= htmlspecialchars($meterLastReading) ?>
-                <?php endif; ?>
-            </span>
-        </div>
-        <div id="clock" class="ops-clock"></div>
-        <div class="ops-sub"><?= htmlspecialchars($_SESSION['user']) ?></div>
-        <button class="btn btn-outline-dark btn-sm" type="button" onclick="toggleTheme()">Display</button>
-        <a class="btn btn-outline-secondary btn-sm" href="export_excel.php?meter_id=<?= $meter_id; ?>">Excel</a>
-        <a class="btn btn-outline-secondary btn-sm" href="export_pdf.php?meter_id=<?= $meter_id; ?>">PDF</a>
-        <a class="btn btn-outline-danger btn-sm" href="logout.php">Sign out</a>
-    </div>
-</div>
-
-<?php
-$supply = $meter_id > 0 ? ems_sync_meter($conn, (int) $meter_id) : ['source' => 'UNKNOWN', 'avg_v' => 0, 'kw' => 0, 'pf' => null];
-$supplyClass = ['EB' => 'supply-eb', 'DG' => 'supply-dg', 'NONE' => 'supply-none'][$supply['source']] ?? 'supply-unknown';
-$supplyText = [
-    'EB' => 'Running on EB',
-    'DG' => 'Running on DG',
-    'NONE' => 'No supply — EB and DG are both unavailable',
-    'UNKNOWN' => 'No telemetry for this meter yet',
-][$supply['source']] ?? 'No telemetry';
-if ($meter_id <= 0 || $meterLastReading === null || $meterAgeMinutes > 5) {
-    $supplyClass = 'supply-none';
-    $supplyText = $meter_id <= 0 ? 'No meter is linked to this location' : 'No communication';
-}
-?>
-<?php if ($meter_id <= 0) { ?>
-<div class="empty-state mb-3">This location has no linked meter. Energy, DG and solar figures stay blank until a gateway or a registered device stores a sample for it.</div>
-<?php } ?>
-<div id="liveError" class="alert alert-warning d-none" role="alert"></div>
-<div class="supply-banner <?= $supplyClass ?>">
-    <?= htmlspecialchars($supplyText) ?>
-    <span class="supply-meta">Voltage <?= number_format((float) $supply['avg_v'], 1) ?> V · Power <?= number_format((float) $supply['kw'], 3) ?> kW<?php if ($supply['pf'] !== null) { ?> · PF <?= number_format((float) $supply['pf'], 2) ?><?php } ?></span>
 </div>
 
 <?php
@@ -525,6 +407,10 @@ try {
     $linkedName = false;
 }
 $mapMarkers = [];
+$tileTone = [];
+foreach ($siteBoard as $tile) {
+    $tileTone[strtoupper((string) $tile['branch'])] = $tile['tone'];
+}
 try {
     $geoSql = 'SELECT g.branch_name, g.state_name, g.latitude, g.longitude FROM site_geo g';
     $geoParams = [];
@@ -538,14 +424,15 @@ try {
         if ($geo['latitude'] === null || $geo['longitude'] === null) {
             continue;
         }
-        $isFocus = strcasecmp((string) $geo['branch_name'], $focusBranch) === 0;
+        $tone = $tileTone[strtoupper((string) $geo['branch_name'])] ?? 'down';
+        $isFocus = $locationPick && strcasecmp((string) $geo['branch_name'], (string) $locationPick['branch']) === 0;
         $mapMarkers[] = [
             'branch' => $geo['branch_name'],
             'state' => $geo['state_name'],
             'lat' => (float) $geo['latitude'],
             'lng' => (float) $geo['longitude'],
             'focus' => $isFocus,
-            'source' => $isFocus ? $supply['source'] : 'UNKNOWN',
+            'source' => ['eb' => 'EB', 'dg' => 'DG', 'down' => 'NONE'][$tone] ?? 'NONE',
         ];
     }
 } catch (Throwable $e) {
@@ -581,9 +468,65 @@ cityMarkers.forEach(marker => {
         iconSize: [marker.focus ? 16 : 10, marker.focus ? 16 : 10],
         iconAnchor: [marker.focus ? 8 : 5, marker.focus ? 8 : 5]
     });
-    L.marker([marker.lat, marker.lng], { icon }).addTo(cityMap).bindTooltip(marker.branch + ' · ' + marker.state);
+    L.marker([marker.lat, marker.lng], { icon }).addTo(cityMap)
+        .bindTooltip(marker.branch + ' · ' + marker.state)
+        .on('click', function () {
+            window.location = 'dashboard.php?location=' + encodeURIComponent(marker.branch);
+        });
 });
 </script>
+
+<?php if ($locationPick) { ?>
+<div class="ops-bar">
+    <div>
+        <h1 class="ops-title"><?= htmlspecialchars($locationPick['branch']) ?></h1>
+        <div class="ops-sub"><?= htmlspecialchars($locationPick['state'] . ' · ' . $locationPick['company']) ?><?= $selectedMeterName !== '' ? ' · ' . htmlspecialchars($selectedMeterName) : '' ?></div>
+        <?php if (count($locationPick['meters']) > 1) { ?>
+        <form method="get" class="mt-2">
+            <input type="hidden" name="location" value="<?= htmlspecialchars($locationPick['branch']) ?>">
+            <select name="meter_id" class="form-select meter-select" onchange="this.form.submit()">
+            <?php foreach ($locationPick['meters'] as $meter) { ?>
+                <option value="<?= (int) $meter['meter_id'] ?>" <?= (int) $meter_id === (int) $meter['meter_id'] ? 'selected' : '' ?>><?= htmlspecialchars($meter['meter_name']) ?></option>
+            <?php } ?>
+            </select>
+        </form>
+        <?php } ?>
+    </div>
+    <div class="ops-actions">
+        <div class="comms <?= $commsClass ?>">
+            <i></i>
+            <span><?= $commsLabel ?></span>
+            <span><?= $meterLastReading === null ? 'No sample stored' : htmlspecialchars($meterLastReading) ?></span>
+        </div>
+        <?php if ($meter_id > 0) { ?>
+        <a class="btn btn-outline-secondary btn-sm" href="export_excel.php?meter_id=<?= $meter_id; ?>">Excel</a>
+        <a class="btn btn-outline-secondary btn-sm" href="export_pdf.php?meter_id=<?= $meter_id; ?>">PDF</a>
+        <?php } ?>
+    </div>
+</div>
+
+<?php
+$supply = $meter_id > 0 ? ems_sync_meter($conn, (int) $meter_id) : ['source' => 'UNKNOWN', 'avg_v' => 0, 'kw' => 0, 'pf' => null];
+$supplyClass = ['EB' => 'supply-eb', 'DG' => 'supply-dg', 'NONE' => 'supply-none'][$supply['source']] ?? 'supply-unknown';
+$supplyText = [
+    'EB' => 'Running on EB',
+    'DG' => 'Running on DG',
+    'NONE' => 'No supply — EB and DG are both unavailable',
+    'UNKNOWN' => 'No telemetry for this meter yet',
+][$supply['source']] ?? 'No telemetry';
+if ($meter_id <= 0 || $meterLastReading === null || $meterAgeMinutes > 5) {
+    $supplyClass = 'supply-none';
+    $supplyText = $meter_id <= 0 ? 'No meter is linked to this location' : 'No communication';
+}
+?>
+<?php if ($meter_id <= 0) { ?>
+<div class="empty-state mb-3">This location has no linked meter. Energy, DG and solar figures stay blank until a gateway or a registered device stores a sample for it.</div>
+<?php } ?>
+<div id="liveError" class="alert alert-warning d-none" role="alert"></div>
+<div class="supply-banner <?= $supplyClass ?>">
+    <?= htmlspecialchars($supplyText) ?>
+    <span class="supply-meta">Voltage <?= number_format((float) $supply['avg_v'], 1) ?> V · Power <?= number_format((float) $supply['kw'], 3) ?> kW<?php if ($supply['pf'] !== null) { ?> · PF <?= number_format((float) $supply['pf'], 2) ?><?php } ?></span>
+</div>
 
 <div class="kpi-grid">
     <div class="panel kpi-power">
@@ -604,17 +547,7 @@ cityMarkers.forEach(marker => {
     <div class="panel kpi-eb">
         <h2>EB register</h2>
         <div class="kpi-value"><span id="kwh">--</span><span class="kpi-unit">kWh</span></div>
-        <div class="kpi-note">This meter</div>
-    </div>
-    <div class="panel kpi-sum">
-        <h2>All-meter EB</h2>
-        <div class="kpi-value"><span id="ebTotal">--</span></div>
-        <div class="kpi-note">Sum of latest EB registers</div>
-    </div>
-    <div class="panel kpi-alarm">
-        <h2>Active alarms</h2>
-        <div class="kpi-value"><span id="alarmSummary"><?= (int) $activeAlarms ?></span></div>
-        <div class="kpi-note"><?= (int) $critical ?> critical · <?= (int) $warning ?> warning</div>
+        <div class="kpi-note">This location</div>
     </div>
 </div>
 
@@ -645,9 +578,8 @@ cityMarkers.forEach(marker => {
 <?php } ?>
 </div>
 
-<div class="ops-split">
-    <div class="panel">
-        <h2>Consumption · kWh</h2>
+<div class="panel mb-3">
+        <h2>Electrical energy · kWh</h2>
         <table class="table table-sm mb-0">
 
         <thead>
@@ -688,23 +620,6 @@ cityMarkers.forEach(marker => {
 
         </tbody>
         </table>
-    </div>
-
-    <div class="panel">
-        <h2>Plant status</h2>
-        <table class="table table-sm mb-0">
-            <tbody>
-                <tr><td>Meters in service</td><td class="text-end" id="meterCount"><?= (int) $meterCount['cnt'] ?></td></tr>
-                <tr><td>Reporting in the last 5 min</td><td class="text-end"><?= (int) $liveCount ?></td></tr>
-                <tr><td>Not reporting</td><td class="text-end"><?= (int) $offlineCount ?></td></tr>
-                <tr><td>Latest sample, any meter</td><td class="text-end"><?= $lastConnected ? htmlspecialchars($lastConnected) : '—' ?></td></tr>
-                <tr><td>All-meter DG register</td><td class="text-end"><span id="dgTotal">--</span> kWh</td></tr>
-                <tr><td>Open incidents</td><td class="text-end"><?= (int) $openIncidents ?></td></tr>
-                <tr><td>Site availability</td><td class="text-end"><?= $availability !== null && $availability !== false ? htmlspecialchars((string) $availability) . '%' : '—' ?></td></tr>
-                <tr><td>MTTR</td><td class="text-end"><?= $mttr !== null && $mttr !== false ? htmlspecialchars((string) $mttr) . ' min' : '—' ?></td></tr>
-            </tbody>
-        </table>
-    </div>
 </div>
 
 <div class="panel mb-3">
@@ -723,23 +638,17 @@ cityMarkers.forEach(marker => {
     </div>
 </div>
 
-<div class="chart-split">
-    <div class="panel">
-        <h2>EB and DG registers</h2>
-        <div style="max-width:280px;margin:0 auto;">
-            <canvas id="pieChart"></canvas>
-        </div>
-    </div>
-    <div class="panel">
-        <h2>Alarm list · <span id="alarmCount"><?= (int) $activeAlarms ?></span></h2>
-        <div id="alarmContainer" class="alarm-list">
-            <div class="text-muted">Checking alarms.</div>
-        </div>
+<div class="panel mb-3">
+    <h2>EB and DG energy</h2>
+    <div style="max-width:280px;margin:0 auto;">
+        <canvas id="pieChart"></canvas>
     </div>
 </div>
+<?php } ?>
 
     
 
+<?php if ($locationPick) { ?>
 <!-- Live KPI Values -->
 
 <script>
@@ -981,9 +890,6 @@ fetch('api/piedata.php?meter_id=<?=$meter_id;?>')
 .then(response => response.json())
 .then(data => {
 
-    document.getElementById('ebTotal').textContent = fmtReading(data.eb, 2);
-    document.getElementById('dgTotal').textContent = fmtReading(data.dg, 2);
-
     const ctx = document.getElementById('pieChart');
 
     new Chart(ctx, {
@@ -1020,108 +926,6 @@ fetch('api/piedata.php?meter_id=<?=$meter_id;?>')
 });
 
 </script>
-
-<script>
-
-function ackAlarm(id)
-{
-    fetch('api/ack_alarm.php',
-    {
-        method:'POST',
-
-        headers:{
-            'Content-Type':
-            'application/x-www-form-urlencoded'
-        },
-
-        body:'id=' + id
-    })
-    .then(response => response.text())
-    .then(result => {
-
-        loadAlarms();
-
-    });
-}
-
-function loadAlarms()
-{
-    fetch('api/alarmdata.php?meter_id=<?=$meter_id;?>')
-    .then(response => response.json())
-    .then(data => {
-
-        document.getElementById('alarmSummary').innerHTML =
-            data.length;
-
-        let html = '';
-
-        if(data.length === 0)
-        {
-            html =
-                '<div class="text-muted">No active alarms on this meter.</div>';
-
-            document.title = 'Energy dashboard';
-        }
-        else
-        {
-            document.title = data.length + ' active alarms · Energy dashboard';
-        }
-
-        data.forEach(alarm => {
-
-            html += `
-            <div class="alert alert-danger">
-
-                <strong>${alarm.parameter_name}</strong>
-
-                | Limit: ${alarm.alarm_value}
-
-                | Actual: ${alarm.actual_value}
-
-                <button
-                    class="btn btn-sm btn-light float-end"
-                    onclick="ackAlarm(${alarm.id})">
-
-                    Acknowledge
-
-                </button>
-
-            </div>
-            `;
-
-        });
-
-        document.getElementById('alarmCount').innerHTML =
-            data.length;
-
-        document.getElementById('alarmContainer').innerHTML =
-            html;
-
-    });
-}
-
-loadAlarms();
-
-setInterval(loadAlarms,5000);
-
-</script>
-
-<script>
-
-function updateClock()
-{
-    const now = new Date();
-    const pad = (n) => String(n).padStart(2, '0');
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    document.getElementById('clock').textContent =
-        pad(now.getDate()) + ' ' + months[now.getMonth()] + ' ' + now.getFullYear()
-        + '  ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
-}
-
-updateClock();
-
-setInterval(updateClock, 1000);
-
-</script>
+<?php } ?>
 
 <?php include 'includes/footer.php'; ?>
