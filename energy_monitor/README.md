@@ -63,3 +63,35 @@ EB Bills and DG Bills open a BECIL-style worksheet for one branch and one month.
 The opening reading of each meter, including the common-area meter, is the previous month’s new reading and cannot be typed over. The first month at a branch is entered by hand. Units are new minus old. Common-area units are split across the broadcasters at that branch so the shares add back to the common meter. Proportionate amounts add back to the bill. GST is 18% of the management charge, and the invoice column is that management charge plus GST.
 
 Bill comparison, under Reports, sets one branch against another, one broadcaster against another, the broadcasters inside a single branch, and transmitter against transmitter. It also shows the latest bill against that branch’s own average.
+
+## RED SURYAN EMS
+
+The same PHP application now uses the RED SURYAN shell: navigation, light and dark display, and the existing pages. New pages read the same database. They do not invent live readings.
+
+| Page | What it uses |
+| --- | --- |
+| `electrical.php` | Latest EB, DG, solar, voltage, current and power-factor samples, plus daily, monthly and yearly register movement |
+| `equipment.php` | Meters whose names identify UPS, DG, air conditioning, transformer or solar |
+| `devices.php` | Device registry in `iot_devices`, plus the age of the last stored sample |
+| `dg_operations.php` | Operator-entered CTI and Office diesel log in `dg_daily_log`, with Excel and PDF export |
+
+South states remain KAL and the other states remain SAFL. BECIL and NON BECIL worksheets are unchanged. Broadcaster names for fuel sharing come from `bill_site_broadcasters`, which is filled from the catalog in `includes/bill_catalog.php`. `Broadcaster details.xlsx` is not in this repository.
+
+MQTT is not implemented. Gateways still post to `datacollector/getdata.php`. `modbus_poller.php` still speaks Modbus TCP to the USR gateway.
+
+### Environment
+
+These variables are optional. When they are unset, the application keeps the previous XAMPP defaults.
+
+| Variable | Default |
+| --- | --- |
+| `EMS_DB_HOST` | `127.0.0.1` |
+| `EMS_DB_PORT` | `3306` |
+| `EMS_DB_NAME` | `princek2` |
+| `EMS_DB_USER` | `root` |
+| `EMS_DB_PASS` | empty |
+| `MODBUS_HOST` | `172.16.11.102` |
+| `MODBUS_PORT` | `502` |
+| `MODBUS_METER_ID` | `1` |
+
+Copy `energy_monitor` and `datacollector` into the web root, start Apache and MySQL, then open `energy_monitor/login.php`. The first successful plant page creates `dg_daily_log` and `iot_devices` if they are missing. Existing tables are not rebuilt.

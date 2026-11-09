@@ -13,8 +13,7 @@ try {
 
 $msg = '';
 
-if(isset($_POST['login']))
-{
+if (isset($_POST['login'])) {
     $username = trim((string) ($_POST['username'] ?? ''));
     $password = md5((string) ($_POST['password'] ?? ''));
 
@@ -30,8 +29,7 @@ if(isset($_POST['login']))
         $password
     ]);
 
-    if($stmt->rowCount() > 0)
-    {
+    if ($stmt->rowCount() > 0) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $branches = [];
@@ -73,81 +71,48 @@ if(isset($_POST['login']))
 
         ems_log_event($conn, $user['username'], 'login', 'session', 'Signed in');
 
-        header("Location: dashboard.php");
+        header('Location: dashboard.php');
         exit;
     }
-    else
-    {
-        ems_log_event($conn, $username !== '' ? $username : 'unknown', 'login failed', 'password', 'Rejected sign-in');
-        $msg='Invalid Login';
-    }
+
+    ems_log_event($conn, $username !== '' ? $username : 'unknown', 'login failed', 'password', 'Rejected sign-in');
+    $msg = 'The username or password was not accepted.';
 }
 
 ?>
-
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
 <meta charset="utf-8">
-
-<link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · RED SURYAN EMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="asset/css/style.css?v=5">
 </head>
-
 <body>
-
-<div class="container mt-5">
-
-<div class="row justify-content-center">
-
-<div class="col-md-4">
-
-<div class="card shadow">
-
-<div class="card-body">
-
-<h3>⚡ EMS Login</h3>
-
-<p class="text-danger">
-<?= $msg ?>
-</p>
-
-<form method="post">
-
-<input
-type="text"
-name="username"
-class="form-control mb-3"
-placeholder="Username">
-
-<input
-type="password"
-name="password"
-class="form-control mb-3"
-placeholder="Password">
-
-<button
-name="login"
-class="btn btn-primary w-100">
-
-Login
-
-</button>
-
-</form>
-
+<div class="login-screen">
+    <section class="login-hero">
+        <div class="brand-mark">RS</div>
+        <h1>RED SURYAN EMS</h1>
+        <p>Electrical supply, diesel generation, billing and alarms for the sites you are assigned.</p>
+    </section>
+    <section class="login-panel">
+        <div class="login-card card p-4">
+            <h2 class="h4 mb-3">Sign in</h2>
+            <?php if ($msg !== '') { ?>
+            <div class="alert alert-danger" role="alert"><?= htmlspecialchars($msg) ?></div>
+            <?php } ?>
+            <form method="post">
+                <label class="form-label" for="username">Username</label>
+                <input id="username" type="text" name="username" class="form-control mb-3" autocomplete="username" required>
+                <label class="form-label" for="password">Password</label>
+                <input id="password" type="password" name="password" class="form-control mb-3" autocomplete="current-password" required>
+                <button name="login" class="btn btn-primary w-100">Sign in</button>
+            </form>
+        </div>
+    </section>
 </div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 </body>
 </html>

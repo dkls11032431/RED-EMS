@@ -16,7 +16,7 @@ if (!in_array($fuel, ['EB', 'DG', 'BOTH'], true)) {
     $fuel = 'BOTH';
 }
 $period = strtolower((string) ($_GET['period'] ?? 'daily'));
-if (!in_array($period, ['daily', 'weekly', 'monthly'], true)) {
+if (!in_array($period, ['daily', 'weekly', 'monthly', 'yearly'], true)) {
     $period = 'daily';
 }
 
@@ -58,6 +58,17 @@ if ($period === 'daily') {
     }
     $from .= ' 00:00:00';
     $to .= ' 23:59:59';
+} elseif ($period === 'yearly') {
+    $fromYear = (string) ($_GET['from'] ?? date('Y', strtotime('-2 years')));
+    $toYear = (string) ($_GET['to'] ?? date('Y'));
+    if (!preg_match('/^\d{4}$/', $fromYear)) {
+        $fromYear = date('Y', strtotime('-2 years'));
+    }
+    if (!preg_match('/^\d{4}$/', $toYear)) {
+        $toYear = date('Y');
+    }
+    $from = $fromYear . '-01-01 00:00:00';
+    $to = $toYear . '-12-31 23:59:59';
 } else {
     $fromMonth = (string) ($_GET['from'] ?? date('Y-m', strtotime('-5 months')));
     $toMonth = (string) ($_GET['to'] ?? date('Y-m'));
@@ -81,6 +92,9 @@ function report_bucket(string $time, string $period): string
         $offset = (int) date('N', $stamp) - 1;
         return date('Y-m-d', strtotime('-' . $offset . ' days', strtotime(date('Y-m-d', $stamp))));
     }
+    if ($period === 'yearly') {
+        return date('Y', $stamp);
+    }
     return date('Y-m', $stamp);
 }
 
@@ -92,6 +106,9 @@ function report_label(string $bucket, string $period): string
     if ($period === 'weekly') {
         $start = strtotime($bucket);
         return date('d M', $start) . ' – ' . date('d M', strtotime('+6 days', $start));
+    }
+    if ($period === 'yearly') {
+        return $bucket;
     }
     return date('M Y', strtotime($bucket . '-01'));
 }
@@ -176,7 +193,7 @@ function report_num($value): string
 }
 
 $title = $fuel === 'EB' ? 'EB report' : ($fuel === 'DG' ? 'DG report' : 'Energy overview');
-$periodTitle = ['daily' => 'Daily', 'weekly' => 'Weekly', 'monthly' => 'Monthly'][$period];
+$periodTitle = ['daily' => 'Daily', 'weekly' => 'Weekly', 'monthly' => 'Monthly', 'yearly' => 'Yearly'][$period];
 
 include 'includes/header.php';
 include 'includes/sidebar.php';
@@ -214,7 +231,7 @@ include 'includes/sidebar.php';
         </div>
     </div>
     <div class="period-tabs">
-        <?php foreach (['daily' => 'Daily', 'weekly' => 'Weekly', 'monthly' => 'Monthly'] as $key => $label) {
+        <?php foreach (['daily' => 'Daily', 'weekly' => 'Weekly', 'monthly' => 'Monthly', 'yearly' => 'Yearly'] as $key => $label) {
             $href = 'consumption_report.php?' . http_build_query(['fuel' => $fuel, 'period' => $key, 'site' => $siteIndex]);
         ?>
         <a class="<?= $period === $key ? 'active' : '' ?>" href="<?= htmlspecialchars($href) ?>"><?= $label ?></a>
@@ -243,6 +260,8 @@ include 'includes/sidebar.php';
             <input type="datetime-local" name="from" class="form-control" value="<?= htmlspecialchars(str_replace(' ', 'T', substr($from, 0, 16))) ?>">
             <?php } elseif ($period === 'monthly') { ?>
             <input type="month" name="from" class="form-control" value="<?= htmlspecialchars(substr($from, 0, 7)) ?>">
+            <?php } elseif ($period === 'yearly') { ?>
+            <input type="number" name="from" min="2000" max="2100" class="form-control" value="<?= htmlspecialchars(substr($from, 0, 4)) ?>">
             <?php } else { ?>
             <input type="date" name="from" class="form-control" value="<?= htmlspecialchars(substr($from, 0, 10)) ?>">
             <?php } ?>
@@ -253,6 +272,8 @@ include 'includes/sidebar.php';
             <input type="datetime-local" name="to" class="form-control" value="<?= htmlspecialchars(str_replace(' ', 'T', substr($to, 0, 16))) ?>">
             <?php } elseif ($period === 'monthly') { ?>
             <input type="month" name="to" class="form-control" value="<?= htmlspecialchars(substr($to, 0, 7)) ?>">
+            <?php } elseif ($period === 'yearly') { ?>
+            <input type="number" name="to" min="2000" max="2100" class="form-control" value="<?= htmlspecialchars(substr($to, 0, 4)) ?>">
             <?php } else { ?>
             <input type="date" name="to" class="form-control" value="<?= htmlspecialchars(substr($to, 0, 10)) ?>">
             <?php } ?>
@@ -285,7 +306,7 @@ include 'includes/sidebar.php';
 <table class="table table-bordered table-striped mb-0">
 <thead>
 <tr>
-    <th><?= $period === 'daily' ? 'Hour' : ($period === 'weekly' ? 'Week' : 'Month') ?></th>
+    <th><?= $period === 'daily' ? 'Hour' : ($period === 'weekly' ? 'Week' : ($period === 'yearly' ? 'Year' : 'Month')) ?></th>
     <th>EB open</th>
     <th>EB close</th>
     <th>EB units</th>
@@ -311,8 +332,10 @@ include 'includes/sidebar.php';
 <?php } ?>
 </tbody>
 </table>
-<p class="small text-muted mt-2 mb-0">Opening is the first stored register in each hour, week, or month. Closing is the last. Units are closing minus opening. EB is green and DG is orange on the chart.</p>
+<p class="small text-muted mt-2 mb-0">Opening is the first stored register in each hour, week, month, or year. Closing is the last. Units are closing minus opening. South states on the location sheet are KAL. Every other state is SAFL. BECIL and NON BECIL stay separate worksheets. EB is green and DG is orange on the chart.</p>
 <div class="mt-2">
+    <a href="dg_operations.php">DG operations log (CTI and Office)</a>
+    <span class="text-muted"> · </span>
     <a href="eb_bill_report.php">Saved EB worksheets</a>
     <span class="text-muted"> · </span>
     <a href="dg_report.php">Saved DG worksheets</a>

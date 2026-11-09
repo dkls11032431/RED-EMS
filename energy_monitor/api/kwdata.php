@@ -1,11 +1,15 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+require __DIR__ . '/../includes/api_guard.php';
 require '../config/db.php';
+require __DIR__ . '/../includes/auth_helpers.php';
 
 $meterId = isset($_GET['meter_id']) ? (int) $_GET['meter_id'] : 0;
+if ($meterId <= 0 || !meter_belongs_to_user($conn, $meterId)) {
+    header('Content-Type: application/json');
+    echo json_encode([]);
+    exit;
+}
 $sql = "
 SELECT
     id,

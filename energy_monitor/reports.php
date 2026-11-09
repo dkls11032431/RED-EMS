@@ -12,25 +12,31 @@ require 'config/db.php';
 
 $data = [];
 
+$reportError = '';
 if(isset($_POST['search']))
 {
-    $from = $_POST['from_date'];
-    $to   = $_POST['to_date'];
+    $from = (string) ($_POST['from_date'] ?? '');
+    $to   = (string) ($_POST['to_date'] ?? '');
 
-    $stmt = $conn->prepare("
-    SELECT
-        parameter_name,
-        value,
-        reading_time
-    FROM meter_readings
-    WHERE DATE(reading_time)
-    BETWEEN ? AND ?
-    ORDER BY reading_time DESC
-    ");
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+        $reportError = 'Choose a valid from and to date.';
+    } else {
+        $stmt = $conn->prepare("
+        SELECT
+            parameter_name,
+            value,
+            reading_time
+        FROM meter_readings
+        WHERE DATE(reading_time)
+        BETWEEN ? AND ?
+        ORDER BY reading_time DESC
+        LIMIT 500
+        ");
 
-    $stmt->execute([$from,$to]);
+        $stmt->execute([$from,$to]);
 
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 
 include 'includes/header.php';
@@ -78,7 +84,13 @@ include 'includes/sidebar.php';
 
 </form>
 
-<table class="table table-bordered">
+<?php if ($reportError !== '') { ?>
+<div class="alert alert-danger"><?= htmlspecialchars($reportError) ?></div>
+<?php } elseif (isset($_POST['search']) && $data === []) { ?>
+<div class="empty-state">No readings were stored between those dates.</div>
+<?php } ?>
+
+<table class="table table-bordered bg-white">
 
     <thead>
 
@@ -100,11 +112,11 @@ include 'includes/sidebar.php';
 
         <tr>
 
-            <td><?= $row['parameter_name']; ?></td>
+            <td><?= htmlspecialchars((string) $row['parameter_name']); ?></td>
 
-            <td><?= $row['value']; ?></td>
+            <td><?= htmlspecialchars((string) $row['value']); ?></td>
 
-            <td><?= $row['reading_time']; ?></td>
+            <td><?= htmlspecialchars((string) $row['reading_time']); ?></td>
 
         </tr>
 

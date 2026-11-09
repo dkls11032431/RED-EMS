@@ -447,6 +447,7 @@ $supplyText = [
     'UNKNOWN' => 'No telemetry for this meter yet',
 ][$supply['source']] ?? 'No telemetry';
 ?>
+<div id="liveError" class="alert alert-warning d-none" role="alert"></div>
 <div class="supply-banner <?= $supplyClass ?>">
     <?= htmlspecialchars($supplyText) ?>
     <span class="supply-meta">Voltage <?= number_format((float) $supply['avg_v'], 1) ?> V · Power <?= number_format((float) $supply['kw'], 3) ?> kW<?php if ($supply['pf'] !== null) { ?> · PF <?= number_format((float) $supply['pf'], 2) ?><?php } ?></span>
@@ -688,10 +689,22 @@ if (localStorage.getItem('ems-theme') === 'dark') {
     document.body.classList.add('dark');
 }
 
-function toggleTheme()
+function noteLiveError(message)
 {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('ems-theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    const box = document.getElementById('liveError');
+    if (!box) {
+        return;
+    }
+    box.textContent = message;
+    box.classList.remove('d-none');
+}
+
+function clearLiveError()
+{
+    const box = document.getElementById('liveError');
+    if (box) {
+        box.classList.add('d-none');
+    }
 }
 
 function fmtReading(value, digits)
@@ -767,7 +780,11 @@ function loadData()
             document.getElementById('current').textContent =
                 fmtReading(iSum / iCount, 2);
         }
+        clearLiveError();
 
+    })
+    .catch(function () {
+        noteLiveError('Live readings could not be loaded. The last stored values above stay on the page.');
     });
 }
 
@@ -818,6 +835,9 @@ function loadKwTrend()
             data.map(row => Number(row.value));
 
         kwChart.update();
+    })
+    .catch(function () {
+        noteLiveError('The power trend could not be loaded.');
     });
 }
 
@@ -902,8 +922,6 @@ fetch('api/piedata.php?meter_id=<?=$meter_id;?>')
 .then(response => response.json())
 .then(data => {
 
-    console.log("PIE DATA:", data);
-
     document.getElementById('ebTotal').textContent = fmtReading(data.eb, 2);
     document.getElementById('dgTotal').textContent = fmtReading(data.dg, 2);
 
@@ -938,7 +956,9 @@ fetch('api/piedata.php?meter_id=<?=$meter_id;?>')
     });
 
 })
-.catch(error => console.error(error));
+.catch(function () {
+    noteLiveError('EB and DG totals could not be loaded.');
+});
 
 </script>
 

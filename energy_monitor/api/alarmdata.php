@@ -10,8 +10,13 @@ if (!isset($_SESSION['user'])) {
 }
 
 require '../config/db.php';
+require __DIR__ . '/../includes/auth_helpers.php';
 
-$meter_id = isset($_GET['meter_id']) ? (int) $_GET['meter_id'] : 1;
+$meter_id = isset($_GET['meter_id']) ? (int) $_GET['meter_id'] : 0;
+if ($meter_id <= 0 || !meter_belongs_to_user($conn, $meter_id)) {
+    echo json_encode([]);
+    exit;
+}
 
 /*
  | parameter_master_princek2 rows all have min_value / max_value set to

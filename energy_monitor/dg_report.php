@@ -130,7 +130,7 @@ include 'includes/sidebar.php';
     </tbody>
 </table>
 
-<p><a href="bill_analysis.php?type=DG">Compare DG bills</a></p>
+<p><a href="bill_analysis.php?type=DG">Compare DG bills</a> · <a href="dg_operations.php">DG operations log</a></p>
 
 </div>
 
