@@ -33,6 +33,7 @@ $crumbMap = [
     'site_map.php' => ['Operations', 'Supply map'],
     'consumption_report.php' => ['Analytics', 'Consumption'],
     'dg_operations.php' => ['Analytics', 'DG operations'],
+    'dg_analytics.php' => ['Analytics', 'DG analytics'],
     'dg_report.php' => ['Analytics', 'DG worksheets'],
     'eb_bill_report.php' => ['Analytics', 'EB worksheets'],
     'bill_analysis.php' => ['Analytics', 'Bill comparison'],
@@ -79,6 +80,7 @@ $userLabel = htmlspecialchars((string) ($_SESSION['user'] ?? ''));
     <a class="sub<?= ems_here('consumption_report.php', ['fuel' => 'EB']) ?>" href="consumption_report.php?fuel=EB&period=daily">EB report</a>
     <a class="sub<?= ems_here('consumption_report.php', ['fuel' => 'DG']) ?>" href="consumption_report.php?fuel=DG&period=daily">DG registers</a>
     <a class="<?= ems_here('dg_operations.php') ?>" href="dg_operations.php">DG operations log</a>
+    <a class="<?= ems_here('dg_analytics.php') ?>" href="dg_analytics.php">DG location analytics</a>
     <a class="<?= ems_here('bill_analysis.php') ?>" href="bill_analysis.php">Bill comparison</a>
     <?php if ($navAll) { ?>
     <a class="<?= ems_here('master_report.php') ?>" href="master_report.php">Management summary</a>

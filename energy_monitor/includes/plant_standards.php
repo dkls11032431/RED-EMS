@@ -321,6 +321,10 @@ function ems_ensure_plant(PDO $conn): void
             KEY idx_iot_meter (meter_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
+    ems_add_column($conn, 'iot_devices', 'branch_name', "VARCHAR(80) NOT NULL DEFAULT ''");
+    ems_add_column($conn, 'iot_devices', 'last_check_at', 'DATETIME NULL');
+    ems_add_column($conn, 'iot_devices', 'last_check_ok', 'TINYINT NULL');
+    ems_add_column($conn, 'iot_devices', 'last_check_detail', 'VARCHAR(255) NULL');
 
     ems_seed_accounts($conn);
     ems_seed_user_locations($conn);
