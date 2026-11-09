@@ -73,9 +73,28 @@ $meterCount = $conn->query("
 
 $locationGroups = filter_location_groups(ems_location_groups($conn));
 $usedMeterIds = $locationGroups['used'];
+require_once __DIR__ . '/includes/site_board.php';
+$siteBoard = ems_site_board($conn, $locationGroups);
+$requestedLocation = trim((string) ($_GET['location'] ?? ''));
+$locationPick = null;
+foreach ($siteBoard as $tile) {
+    if ($requestedLocation !== '' && strcasecmp($tile['branch'], $requestedLocation) === 0) {
+        $locationPick = $tile;
+    }
+}
 
 $meter_id = isset($_GET['meter_id']) ? (int) $_GET['meter_id'] : 0;
-if ($meter_id <= 0 || !meter_belongs_to_user($conn, $meter_id)) {
+if ($locationPick) {
+    $allowedIds = array_map(function ($meter) {
+        return (int) $meter['meter_id'];
+    }, $locationPick['meters']);
+    if (!in_array($meter_id, $allowedIds, true)) {
+        $meter_id = (int) $locationPick['main_meter_id'];
+    }
+    if ($meter_id > 0 && !meter_belongs_to_user($conn, $meter_id)) {
+        $meter_id = 0;
+    }
+} elseif ($meter_id <= 0 || !meter_belongs_to_user($conn, $meter_id)) {
     $meter_id = 0;
     foreach ($locationGroups['locations'] as $group) {
         $meter_id = (int) ($group['meters'][0]['meter_id'] ?? 0);
@@ -250,6 +269,19 @@ if ($selectedLocation === '') {
         $selectedLocation = 'Unassigned meter';
     }
 }
+if ($locationPick) {
+    $selectedCity = (string) $locationPick['branch'];
+    if ($meter_id <= 0) {
+        $selectedMeterName = $locationPick['branch'];
+        $selectedLocation = $locationPick['state'] . ' · ' . $locationPick['company'];
+    }
+}
+
+if ($meter_id > 0 && ($meterLastReading === null || $meterAgeMinutes > 5)) {
+    ems_raise_alarm($conn, (int) $meter_id, $selectedCity !== '' ? $selectedCity : ('Meter ' . $meter_id), 'COMMUNICATION FAILURE', 'Link', 5, $meterAgeMinutes ?? 0, 'CRITICAL');
+} elseif ($meter_id > 0) {
+    ems_clear_alarm($conn, (int) $meter_id, 'COMMUNICATION FAILURE');
+}
 
 if ($meterLastReading === null) {
     $commsLabel = 'NO DATA';
@@ -352,6 +384,26 @@ include 'includes/sidebar.php';
 </style>
 <div class="content">
 
+<div class="site-board" aria-label="Locations">
+<?php if ($siteBoard === []) { ?>
+    <div class="empty-state">No locations are assigned to this account.</div>
+<?php } ?>
+<?php foreach ($siteBoard as $tile) {
+    $selectedTile = strcasecmp($tile['branch'], $selectedCity) === 0
+        || strcasecmp(ems_match_branch($tile['branch']), ems_match_branch($selectedCity)) === 0;
+    $href = 'dashboard.php?' . http_build_query([
+        'location' => $tile['branch'],
+        'meter_id' => $tile['main_meter_id'],
+    ]);
+?>
+    <a class="site-tile <?= htmlspecialchars($tile['tone']) ?><?= $selectedTile ? ' selected' : '' ?>" href="<?= htmlspecialchars($href) ?>">
+        <strong><?= htmlspecialchars($tile['branch']) ?></strong>
+        <em><?= htmlspecialchars($tile['label']) ?></em>
+        <span><?= htmlspecialchars($tile['company'] . ' · ' . $tile['updated']) ?></span>
+    </a>
+<?php } ?>
+</div>
+
 <div class="ops-bar">
     <div>
         <h1 class="ops-title">Energy dashboard</h1>
@@ -446,7 +498,14 @@ $supplyText = [
     'NONE' => 'No supply — EB and DG are both unavailable',
     'UNKNOWN' => 'No telemetry for this meter yet',
 ][$supply['source']] ?? 'No telemetry';
+if ($meter_id <= 0 || $meterLastReading === null || $meterAgeMinutes > 5) {
+    $supplyClass = 'supply-none';
+    $supplyText = $meter_id <= 0 ? 'No meter is linked to this location' : 'No communication';
+}
 ?>
+<?php if ($meter_id <= 0) { ?>
+<div class="empty-state mb-3">This location has no linked meter. Energy, DG and solar figures stay blank until a gateway or a registered device stores a sample for it.</div>
+<?php } ?>
 <div id="liveError" class="alert alert-warning d-none" role="alert"></div>
 <div class="supply-banner <?= $supplyClass ?>">
     <?= htmlspecialchars($supplyText) ?>

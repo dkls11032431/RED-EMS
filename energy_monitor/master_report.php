@@ -78,6 +78,23 @@ $stateStmt = $conn->prepare("
 $stateStmt->execute([$from, $to]);
 $stateData = $stateStmt->fetchAll(PDO::FETCH_ASSOC);
 
+$dgSummary = ['CTI' => ['runs' => 0, 'kwh' => 0], 'OFFICE' => ['runs' => 0, 'kwh' => 0]];
+try {
+    $dgStmt = $conn->prepare("
+        SELECT category, COUNT(*) runs, COALESCE(SUM(kwh), 0) kwh
+        FROM dg_daily_log
+        WHERE log_date BETWEEN ? AND ?
+        GROUP BY category
+    ");
+    $dgStmt->execute([$from, $to]);
+    foreach ($dgStmt as $row) {
+        $key = $row['category'] === 'OFFICE' ? 'OFFICE' : 'CTI';
+        $dgSummary[$key] = ['runs' => (int) $row['runs'], 'kwh' => (float) $row['kwh']];
+    }
+} catch (Throwable $e) {
+    $dgSummary = ['CTI' => ['runs' => 0, 'kwh' => 0], 'OFFICE' => ['runs' => 0, 'kwh' => 0]];
+}
+
 include 'includes/header.php';
 include 'includes/sidebar.php';
 
@@ -85,58 +102,78 @@ include 'includes/sidebar.php';
 
 <div class="content">
 
-<h2>Management summary</h2>
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-3"><input type="date" name="from" value="<?= htmlspecialchars($from) ?>" class="form-control"></div>
-    <div class="col-md-3"><input type="date" name="to" value="<?= htmlspecialchars($to) ?>" class="form-control"></div>
-    <div class="col-md-2"><button class="btn btn-primary">Apply</button></div>
+<h1 class="page-title">Management summary</h1>
+<p class="page-lead">Saved EB and DG worksheets by company and bill type, plus CTI and Office diesel runs. South states are KAL. Other states are SAFL. BECIL and NON BECIL stay separate.</p>
+<form method="get" class="panel mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3"><label class="form-label">From</label><input type="date" name="from" value="<?= htmlspecialchars($from) ?>" class="form-control"></div>
+        <div class="col-md-3"><label class="form-label">To</label><input type="date" name="to" value="<?= htmlspecialchars($to) ?>" class="form-control"></div>
+        <div class="col-md-2"><button class="btn btn-primary">Apply</button></div>
+    </div>
 </form>
 
-<div class="row">
-
-    <div class="col-md-3">
-        <div class="card bg-primary text-white p-3">
-            <h5>Total Cost</h5>
-            <h3>
-                ₹ <?= number_format($totalBill['total_cost'],0) ?>
-            </h3>
-        </div>
+<div class="kpi-grid">
+    <div class="panel">
+        <h2>Worksheet cost</h2>
+        <div class="kpi-value">₹ <?= number_format((float) ($totalBill['total_cost'] ?? 0), 0) ?></div>
+        <div class="kpi-note">All saved worksheets</div>
     </div>
-
-    <div class="col-md-3">
-        <div class="card bg-success text-white p-3">
-            <h5>Total Units</h5>
-            <h3>
-                <?= number_format($totalBill['total_units'],0) ?>
-            </h3>
-        </div>
+    <div class="panel">
+        <h2>Common units</h2>
+        <div class="kpi-value"><?= number_format((float) ($totalBill['total_units'] ?? 0), 0) ?><span class="kpi-unit">kWh</span></div>
+        <div class="kpi-note">All saved worksheets</div>
     </div>
-
+    <div class="panel">
+        <h2>CTI diesel runs</h2>
+        <div class="kpi-value"><?= number_format($dgSummary['CTI']['kwh'], 1) ?><span class="kpi-unit">kWh</span></div>
+        <div class="kpi-note"><?= (int) $dgSummary['CTI']['runs'] ?> saved runs in the date window</div>
+    </div>
+    <div class="panel">
+        <h2>Office diesel runs</h2>
+        <div class="kpi-value"><?= number_format($dgSummary['OFFICE']['kwh'], 1) ?><span class="kpi-unit">kWh</span></div>
+        <div class="kpi-note"><?= (int) $dgSummary['OFFICE']['runs'] ?> saved runs in the date window</div>
+    </div>
 </div>
 
-<br>
-
-<div class="row">
-
-    <div class="col-md-6">
-
-        <div class="card p-3">
-
-            <h5>KAL vs SAFL Cost</h5>
-
-            <canvas id="companyChart"></canvas>
-
-        </div>
-
+<div class="chart-split">
+    <div class="panel">
+        <h2>KAL and SAFL cost</h2>
+        <?php if ($companies === []) { ?>
+        <div class="empty-state">No worksheet amounts in this window.</div>
+        <?php } else { ?>
+        <canvas id="companyChart" height="160"></canvas>
+        <?php } ?>
     </div>
-
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h5>BECIL vs NON-BECIL</h5>
-            <canvas id="typeChart"></canvas>
-        </div>
+    <div class="panel">
+        <h2>BECIL, NON BECIL and DG</h2>
+        <?php if ($types === []) { ?>
+        <div class="empty-state">No bill types in this window.</div>
+        <?php } else { ?>
+        <canvas id="typeChart" height="160"></canvas>
+        <?php } ?>
     </div>
+</div>
 
+<div class="panel">
+    <h2>Units by state</h2>
+    <?php if ($stateData === []) { ?>
+    <div class="empty-state">No state totals in this window.</div>
+    <?php } else { ?>
+    <div class="table-responsive">
+    <table class="table table-sm mb-0">
+        <thead><tr><th>State</th><th class="text-end">Common units</th></tr></thead>
+        <tbody>
+        <?php foreach ($stateData as $row) { ?>
+        <tr>
+            <td><?= htmlspecialchars((string) $row['state_name']) ?></td>
+            <td class="text-end"><?= number_format((float) $row['units'], 2) ?></td>
+        </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    </div>
+    <?php } ?>
+    <p class="small text-muted mb-0 mt-2"><a href="dg_analytics.php">DG location comparison</a> · <a href="bill_analysis.php">Bill comparison</a></p>
 </div>
 
 </div>
@@ -145,7 +182,7 @@ include 'includes/sidebar.php';
 
 const ctx = document.getElementById('companyChart');
 
-new Chart(ctx, {
+if (ctx) new Chart(ctx, {
     type: 'pie',
     data: {
         labels: <?= json_encode($companies); ?>,
@@ -170,8 +207,9 @@ new Chart(ctx, {
     }
 });
 
-new Chart(
-document.getElementById('typeChart'),
+const typeCanvas = document.getElementById('typeChart');
+if (typeCanvas) new Chart(
+typeCanvas,
 {
     type: 'doughnut',
     data: {

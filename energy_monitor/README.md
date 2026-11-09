@@ -70,6 +70,8 @@ The same PHP application now uses the RED SURYAN shell: navigation, light and da
 
 | Page | What it uses |
 | --- | --- |
+| `dashboard.php` | One button per billing location. Green is a fresh EB sample, orange is DG, red is no sample in the last five minutes |
+| `dg_analytics.php` | CTI and Office diesel totals compared across locations |
 | `electrical.php` | Latest EB, DG, solar, voltage, current and power-factor samples, plus daily, monthly and yearly register movement |
 | `equipment.php` | Meters whose names identify UPS, DG, air conditioning, transformer or solar |
 | `devices.php` | Device registry in `iot_devices`, plus the age of the last stored sample |

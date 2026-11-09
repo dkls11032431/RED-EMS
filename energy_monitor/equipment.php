@@ -16,7 +16,10 @@ $groups = filter_location_groups(ems_location_groups($conn));
 $classes = [
     'UPS' => 'UPS',
     'DG' => 'Diesel generator',
+    'PUMP' => 'Pumps and motors',
+    'LIGHT' => 'Lighting',
     'AC' => 'Air conditioning',
+    'WATER' => 'Water and fuel',
     'TX' => 'Transformer',
     'SOLAR' => 'Solar',
 ];
@@ -26,6 +29,15 @@ function equipment_class(string $name): string
     $n = strtoupper($name);
     if (strpos($n, 'UPS') !== false) {
         return 'UPS';
+    }
+    if (preg_match('/PUMP|MOTOR/', $n)) {
+        return 'PUMP';
+    }
+    if (preg_match('/LIGHT|LUMIN/', $n)) {
+        return 'LIGHT';
+    }
+    if (preg_match('/WATER|FUEL TANK|DIESEL TANK|LEVEL/', $n)) {
+        return 'WATER';
     }
     if (preg_match('/\bDG\b|DIESEL|GENERATOR/', $n)) {
         return 'DG';
@@ -77,7 +89,7 @@ include 'includes/sidebar.php';
 ?>
 <div class="content">
     <h1 class="page-title">Equipment monitoring</h1>
-    <p class="page-lead">UPS, DG, air conditioning, transformer and solar assets are recognised from the meter name. Status uses the last stored sample, not a simulated value.</p>
+    <p class="page-lead">UPS, DG, pumps, lighting, air conditioning, water, fuel, transformer and solar assets are recognised from the meter name. Status uses the last stored sample.</p>
 
     <div class="equip-grid">
     <?php foreach ($classes as $key => $title) {
