@@ -20,6 +20,10 @@ $type = strtoupper($_GET['type'] ?? $_POST['bill_type'] ?? 'BECIL');
 if (!in_array($type, $allowedTypes, true)) {
     $type = 'BECIL';
 }
+if ($type === 'DG') {
+    header('Location: dg_operations.php');
+    exit;
+}
 $company = strtoupper($_GET['company'] ?? $_POST['company'] ?? 'SAFL');
 if (!in_array($company, ['KAL', 'SAFL'], true)) {
     $company = 'SAFL';
@@ -358,6 +362,7 @@ foreach ($catalog as $i => $item) {
     $lineViews[] = [
         'item' => $item,
         'fault' => $branch !== '' ? ems_fault_status($conn, $type, $company, $branch, $item['broadcaster'], $item['transmitter']) : null,
+        'fault_latest' => $branch !== '' ? ems_fault_latest($conn, $type, $company, $branch, $item['broadcaster'], $item['transmitter']) : null,
         'direct' => $_POST['lines'][$i]['direct'] ?? ($stored['units'] ?? ''),
         'old' => $old,
         'locked' => $previous !== null,
@@ -576,7 +581,9 @@ include 'includes/sidebar.php';
                     <td class="text-end units">
                         <?php if (($line['fault'] ?? '') === 'approved') { ?>
                         <input type="number" step="0.01" min="0" name="lines[<?= $i ?>][direct]" class="form-control direct-units" value="<?= htmlspecialchars((string) ($line['direct'] ?? '')) ?>" title="Approved direct units">
-                        <?php } else { ?>0<?php } ?>
+                        <?php } else { ?>
+                        <input class="form-control" value="" disabled placeholder="Needs approval">
+                        <?php } ?>
                     </td>
                     <td class="text-end common">0</td>
                     <td class="text-end total">0</td>
@@ -588,9 +595,19 @@ include 'includes/sidebar.php';
             </tbody>
         </table>
         <?php if (($line['fault'] ?? '') === 'approved') { ?>
-        <div class="small text-success mb-2">Admin approved direct units. Enter them in the Units column.</div>
+        <div class="small text-success mb-2">Approved. Enter the units directly. Revoking the approval turns this field off.</div>
         <?php } elseif (($line['fault'] ?? '') === 'pending') { ?>
-        <div class="small text-muted mb-2">Waiting for admin approval to enter units directly.</div>
+        <div class="small text-muted mb-2">Waiting for approval. Direct units stay disabled until then.</div>
+        <?php } elseif (in_array(($line['fault_latest'] ?? ''), ['revoked', 'closed', 'rejected'], true)) { ?>
+        <div class="small text-danger mb-2">Direct entry is disabled. The last request was <?= htmlspecialchars((string) $line['fault_latest']) ?>.</div>
+        <div class="row g-2 mb-2">
+            <div class="col-md-8">
+                <input class="form-control form-control-sm" name="fault_reason[<?= $i ?>]" placeholder="Reason for a new direct-entry request">
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-sm btn-outline-secondary" type="submit" name="request_fault" value="<?= $i ?>">Request direct units</button>
+            </div>
+        </div>
         <?php } else { ?>
         <div class="row g-2 mb-2">
             <div class="col-md-8">

@@ -444,6 +444,116 @@ function bill_ensure(PDO $conn): void
         }
         $tx->execute([$state, $branch, $broadcaster, $transmitter, bill_legal_name($broadcaster, $state)]);
     }
+    bill_apply_workbook($conn);
+}
+
+function bill_canonical_state(string $state): string
+{
+    $clean = trim($state);
+    $key = strtoupper($clean);
+    $map = [
+        'ANDHRA PRADEH' => 'ANDHRA PRADESH',
+        'ANDHRA PRADESH' => 'ANDHRA PRADESH',
+    ];
+    return $map[$key] ?? $clean;
+}
+
+function bill_name_key(string $value): string
+{
+    return strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $value));
+}
+
+/**
+ * Adds workbook locations and broadcasters. An existing transmitter is kept.
+ * The sheet has no transmitter column, so a new broadcaster starts with a blank transmitter for an admin to fill.
+ */
+function bill_apply_workbook(PDO $conn): void
+{
+    $path = dirname(__DIR__) . '/data/broadcasters.json';
+    if (!is_file($path)) {
+        return;
+    }
+    $rows = json_decode((string) file_get_contents($path), true);
+    if (!is_array($rows)) {
+        return;
+    }
+
+    $sites = [];
+    foreach ($conn->query('SELECT id, state_name, branch_name, company FROM bill_sites') as $site) {
+        $sites[strtoupper($site['branch_name'])] = $site;
+    }
+    $existing = [];
+    foreach ($conn->query('SELECT id, state_name, branch_name, broadcaster, transmitter FROM bill_site_broadcasters') as $row) {
+        $existing[strtoupper($row['branch_name'])][bill_name_key($row['broadcaster'])][] = $row;
+    }
+
+    $insertSite = $conn->prepare('INSERT INTO bill_sites (state_name, branch_name, company) VALUES (?, ?, ?)');
+    $insertTx = $conn->prepare('
+        INSERT INTO bill_site_broadcasters (state_name, branch_name, broadcaster, transmitter, legal_name)
+        VALUES (?, ?, ?, ?, ?)
+    ');
+    $rename = $conn->prepare('UPDATE bill_site_broadcasters SET broadcaster = ?, legal_name = ? WHERE id = ?');
+    $clash = $conn->prepare('
+        SELECT id FROM bill_site_broadcasters
+        WHERE state_name = ? AND branch_name = ? AND broadcaster = ? AND transmitter = ? AND id <> ?
+        LIMIT 1
+    ');
+
+    foreach ($rows as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $state = bill_canonical_state((string) ($row['state'] ?? ''));
+        $branch = trim((string) ($row['branch'] ?? ''));
+        $broadcaster = trim((string) ($row['broadcaster'] ?? ''));
+        if ($state === '' || $branch === '' || $broadcaster === '') {
+            continue;
+        }
+        $branchKey = strtoupper($branch);
+        if (isset($sites[$branchKey])) {
+            $state = $sites[$branchKey]['state_name'];
+            $branch = $sites[$branchKey]['branch_name'];
+        } else {
+            $company = bill_company_for_state($state);
+            $insertSite->execute([$state, $branch, $company]);
+            $sites[$branchKey] = [
+                'state_name' => $state,
+                'branch_name' => $branch,
+                'company' => $company,
+            ];
+        }
+        $key = bill_name_key($broadcaster);
+        $matches = $existing[$branchKey][$key] ?? [];
+        if ($matches === []) {
+            try {
+                $insertTx->execute([
+                    $state,
+                    $branch,
+                    $broadcaster,
+                    '',
+                    bill_legal_name($broadcaster, $state),
+                ]);
+            } catch (Throwable $e) {
+                continue;
+            }
+            $existing[$branchKey][$key][] = ['broadcaster' => $broadcaster];
+            continue;
+        }
+        foreach ($matches as $match) {
+            if (!isset($match['id']) || $match['broadcaster'] === $broadcaster) {
+                continue;
+            }
+            $clash->execute([$state, $branch, $broadcaster, (string) ($match['transmitter'] ?? ''), (int) $match['id']]);
+            if ($clash->fetchColumn()) {
+                continue;
+            }
+            try {
+                $rename->execute([$broadcaster, bill_legal_name($broadcaster, $state), (int) $match['id']]);
+            } catch (Throwable $e) {
+                continue;
+            }
+        }
+    }
 }
 
 function bill_sites(PDO $conn, string $company): array

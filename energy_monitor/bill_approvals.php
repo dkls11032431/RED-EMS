@@ -12,7 +12,13 @@ require 'includes/activity_log.php';
 ems_ensure_plant($conn);
 
 if (sees_all_sites() && isset($_POST['decision'], $_POST['id'])) {
-    $status = $_POST['decision'] === 'approve' ? 'approved' : ($_POST['decision'] === 'close' ? 'closed' : 'rejected');
+    $decision = (string) $_POST['decision'];
+    $status = 'rejected';
+    if ($decision === 'approve') {
+        $status = 'approved';
+    } elseif ($decision === 'revoke' || $decision === 'close') {
+        $status = 'revoked';
+    }
     $stmt = $conn->prepare("
         UPDATE bill_fault_requests
         SET status = ?, reviewed_by = ?, reviewed_at = NOW()
@@ -39,7 +45,7 @@ include 'includes/sidebar.php';
 ?>
 <div class="content">
 <h2>Faulty meter approvals</h2>
-<p class="text-muted">A location user can ask to type units for one broadcaster when that meter is faulty. Direct entry stays open only while the request is approved. Close it when the meter is replaced.</p>
+<p class="text-muted">Direct units stay off until a request is approved. Revoke turns that field off again. A new request is required before anyone can type units.</p>
 <table class="table table-bordered bg-white">
 <thead><tr><th>When</th><th>Location</th><th>Broadcaster</th><th>Transmitter</th><th>Reason</th><th>By</th><th>Status</th><th></th></tr></thead>
 <tbody>
@@ -62,7 +68,7 @@ include 'includes/sidebar.php';
         <?php } elseif (sees_all_sites() && $row['status'] === 'approved') { ?>
         <form method="post" class="d-inline">
             <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
-            <button class="btn btn-sm btn-outline-secondary" name="decision" value="close">Meter replaced</button>
+            <button class="btn btn-sm btn-outline-danger" name="decision" value="revoke">Revoke</button>
         </form>
         <?php } ?>
     </td>
