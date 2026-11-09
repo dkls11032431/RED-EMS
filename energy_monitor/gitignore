@@ -1,0 +1,3 @@
+datacollector/*.log
+datacollector/partial_*.txt
+*.log
