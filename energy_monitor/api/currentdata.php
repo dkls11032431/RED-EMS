@@ -1,8 +1,15 @@
 <?php
 
+require __DIR__ . '/../includes/api_guard.php';
 require '../config/db.php';
+require __DIR__ . '/../includes/auth_helpers.php';
 
 $meterId = isset($_GET['meter_id']) ? (int) $_GET['meter_id'] : 0;
+if ($meterId <= 0 || !meter_belongs_to_user($conn, $meterId)) {
+    header('Content-Type: application/json');
+    echo json_encode(['labels' => [], 'Ir' => [], 'Iy' => [], 'Ib' => [], 'error' => 'Meter is outside your account']);
+    exit;
+}
 $from = $_GET['from'] ?? '';
 $to = $_GET['to'] ?? '';
 $data = ['labels' => [], 'Ir' => [], 'Iy' => [], 'Ib' => []];

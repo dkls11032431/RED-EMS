@@ -14,11 +14,10 @@ require __DIR__ . '/config/db.php';
 require __DIR__ . '/includes/modbus_client.php';
 $registerMap = require __DIR__ . '/includes/spmg300_register_map.php';
 
-// --- Configure these three for your setup ---
-$gatewayHost = '172.16.11.102'; // the USR gateway's IP (from the config software screenshot)
-$gatewayPort = 502;              // Modbus TCP port, per the gateway's Local Port setting
-$meterId     = 1;                // which meter_id this gateway/meter maps to in meter_master
-// ----------------------------------------------
+// Defaults match the existing USR gateway. Override with MODBUS_HOST, MODBUS_PORT, MODBUS_METER_ID.
+$gatewayHost = getenv('MODBUS_HOST') ?: '172.16.11.102';
+$gatewayPort = (int) (getenv('MODBUS_PORT') ?: 502);
+$meterId     = (int) (getenv('MODBUS_METER_ID') ?: 1);
 
 $paramIdCache = [];
 

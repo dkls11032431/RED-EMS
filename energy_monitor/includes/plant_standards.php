@@ -200,14 +200,18 @@ function ems_ensure_plant(PDO $conn): void
             branch_name VARCHAR(80) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
-    $conn->exec("
-        INSERT IGNORE INTO meter_branches (meter_id, branch_name)
-        SELECT meter_id, 'TRICHY' FROM meter_master WHERE meter_name LIKE '%Trichy%'
-    ");
-    $conn->exec("
-        INSERT IGNORE INTO meter_branches (meter_id, branch_name)
-        SELECT meter_id, 'PUNE' FROM meter_master WHERE meter_name LIKE '%Pune%' OR meter_name LIKE '%Main Incomer%'
-    ");
+    try {
+        $conn->exec("
+            INSERT IGNORE INTO meter_branches (meter_id, branch_name)
+            SELECT meter_id, 'TRICHY' FROM meter_master WHERE meter_name LIKE '%Trichy%'
+        ");
+        $conn->exec("
+            INSERT IGNORE INTO meter_branches (meter_id, branch_name)
+            SELECT meter_id, 'PUNE' FROM meter_master WHERE meter_name LIKE '%Pune%' OR meter_name LIKE '%Main Incomer%'
+        ");
+    } catch (Throwable $e) {
+        // meter_master is created by the existing collector, not by this page.
+    }
 
     $conn->exec("
         CREATE TABLE IF NOT EXISTS mail_settings (
@@ -277,6 +281,46 @@ function ems_ensure_plant(PDO $conn): void
     ems_add_column($conn, 'event_log', 'duration_seconds', 'INT NULL');
     ems_add_column($conn, 'event_log', 'ip_address', 'VARCHAR(64) NULL');
     ems_add_column($conn, 'event_log', 'created_at', 'DATETIME NULL');
+
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS dg_daily_log (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            log_date DATE NOT NULL,
+            category VARCHAR(16) NOT NULL,
+            company VARCHAR(10) NOT NULL DEFAULT '',
+            branch_name VARCHAR(80) NOT NULL,
+            opening_kwh DECIMAL(14,2) NOT NULL DEFAULT 0,
+            closing_kwh DECIMAL(14,2) NOT NULL DEFAULT 0,
+            kwh DECIMAL(14,2) NOT NULL DEFAULT 0,
+            power_out CHAR(5) NOT NULL DEFAULT '',
+            power_in CHAR(5) NOT NULL DEFAULT '',
+            running_hmm DECIMAL(8,2) NOT NULL DEFAULT 0,
+            tank_litres DECIMAL(12,2) NULL,
+            consumption_litres DECIMAL(12,2) NULL,
+            hand_stock_litres DECIMAL(12,2) NULL,
+            fuel_operator VARCHAR(120) NOT NULL DEFAULT '',
+            fuel_qty DECIMAL(12,2) NULL,
+            remarks VARCHAR(500) NOT NULL DEFAULT '',
+            created_by VARCHAR(80) NOT NULL DEFAULT '',
+            created_at DATETIME NOT NULL,
+            updated_at DATETIME NOT NULL,
+            KEY idx_dg_day (log_date, branch_name, category)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS iot_devices (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            meter_id INT NOT NULL,
+            device_name VARCHAR(120) NOT NULL,
+            protocol VARCHAR(24) NOT NULL,
+            host VARCHAR(160) NOT NULL DEFAULT '',
+            port INT NULL,
+            unit_id INT NULL,
+            notes VARCHAR(500) NOT NULL DEFAULT '',
+            created_at DATETIME NOT NULL,
+            KEY idx_iot_meter (meter_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
 
     ems_seed_accounts($conn);
     ems_seed_user_locations($conn);

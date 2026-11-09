@@ -1,5 +1,6 @@
 <?php
 
+require __DIR__ . '/../includes/api_guard.php';
 require '../config/db.php';
 
 $sql = "
